@@ -1,0 +1,53 @@
+<div class="container py-5" *ngIf="!isLoading && course; else loadingOrError">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="row g-0">
+          <div class="col-md-5">
+            <img 
+              [src]="course.thumbnailUrl" 
+              class="img-fluid h-100 w-100 object-fit-cover" 
+              alt="Course Image">
+          </div>
+          <div class="col-md-7">
+            <div class="card-body p-4">
+              <h3 class="card-title mb-3 fw-bold text-primary">
+                {{ course.title }}
+              </h3>
+              <p class="text-muted mb-3">{{ course.description }}</p>
+
+              <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item">
+                  <strong>Category:</strong> {{ course.categoryName }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Instructor:</strong> {{ course.instructorName }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Price:</strong> {{ course.price }}
+                </li>
+              </ul>
+
+              <button class="btn btn-outline-primary mt-3" routerLink="/courses">
+                ← Back to Courses
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingOrError>
+  <div class="d-flex justify-content-center align-items-center py-5">
+    <div *ngIf="isLoading" class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+  </div>
+</ng-template>

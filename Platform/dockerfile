@@ -1,0 +1,29 @@
+# Stage 1: Build and Publish
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy csproj and restore dependencies
+COPY ["Platform/Platform.csproj", "Platform/"]
+COPY ["src/Platform.Application/Platform.Application.csproj", "src/Platform.Application/"]
+COPY ["src/Platform.Core/Platform.Core.csproj", "src/Platform.Core/"]
+COPY ["src/Platform.Infrastructure/Platform.Infrastructure.csproj", "src/Platform.Infrastructure/"]
+COPY ["src/Platform.Shared/Platform.Shared.csproj", "src/Platform.Shared/"]
+
+RUN dotnet restore "Platform/Platform.csproj"
+
+# Copy all files and publish
+COPY . .
+WORKDIR /src/Platform
+RUN dotnet publish "Platform.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Configure port
+ENV ASPNETCORE_HTTP_PORTS=5001
+EXPOSE 5001
+
+# Start the app
+ENTRYPOINT ["dotnet", "Platform.dll"]

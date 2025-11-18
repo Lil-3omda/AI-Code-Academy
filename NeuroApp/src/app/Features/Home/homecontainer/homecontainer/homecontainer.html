@@ -1,0 +1,258 @@
+
+    <!-- Header -->
+    <app-navbar></app-navbar>
+
+
+
+
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6 hero-content">
+            <h1 class="hero-title">Advance Your Career With Expert-Led Courses</h1>
+            <p class="hero-subtitle">
+              Join over 5,000 students learning at their own pace with our professional courses. Gain
+              skills that matter in today's competitive job market.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <button class="btn btn-light px-4 py-2 rounded-pill fw-bold">Explore Courses</button>
+              <!-- <button class="btn btn-outline-light px-4 py-2 rounded-pill">Become an Instructor</button> -->
+            </div>
+          </div>
+          <div class="col-lg-6 text-center">
+            <div class="hero-image mt-5 mt-lg-0">
+              <img
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                alt="Online Learning" class="img-fluid rounded-3 shadow-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- <app-hero></app-hero> -->
+    <!-- Features Section -->
+    <app-features></app-features>
+
+
+
+
+
+
+  <section class="ai-courses-section">
+    <div class="container">
+      <h2 class="section-title">{{currentCategory?.name ??""}} </h2>
+      <p class="section-subtitle">{{currentCategory?.description ?? ""}}.</p>
+
+      <div class="carousel-wrapper">
+        <div class="cards-container" id="ai-courses-carousel">
+
+            @for (item of FilterCoursesByFirstCategory; track $index) {
+
+
+
+
+          <article class="card">
+            <div class="course-card w-100">
+              <div class="card-image-wrapper">
+<img [src]="getImageUrl(item.thumbnailUrl)" alt="Course Thumbnail" class="img-fluid rounded-3 shadow-sm"
+                onerror="this.src='https://tse2.mm.bing.net/th/id/OIP.Ct30McAoRmpZ0OH8ii6oeAHaHa?pid=Api&P=0&h=220'" />
+                <!-- <div class="card-badge">Popular</div> -->
+              </div>
+              <div class="card-content   m-0">
+                <div class="card-body  p-0  ">
+                  <h3 class="card-title   mb-0  ">{{item.title}} Course</h3>
+                  <p class="card-description   mb-0 ">
+                    {{item.description}}.
+                  </p>
+
+                  <div class="card-price  mb-0 ">${{item.price}}</div>
+                </div>
+                <a href="#" class="card-link mt-0">Enroll Now</a>
+              </div>
+            </div>
+          </article>
+
+
+        }
+
+        </div>
+
+        <!-- <div class="carousel-nav">
+          <button class="nav-btn" id="prev-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="nav-btn" id="next-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div> -->
+
+
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+  <section class="ai-courses-section mt-5">
+    <div class="container">
+      <h2 class="section-title">{{secondCategory?.name ??""}} </h2>
+      <p class="section-subtitle">{{secondCategory?.description ?? ""}}.</p>
+
+      <div class="carousel-wrapper">
+        <div class="cards-container" id="ai-courses-carousel">
+
+          @for (item of FilterCoursesBySecondCategory; track $index) {
+
+
+
+
+          <article class="card">
+            <div class="course-card w-100">
+              <div class="card-image-wrapper">
+<img [src]="getImageUrl(item.thumbnailUrl)" alt="Course Thumbnail" class="img-fluid rounded-3 shadow-sm"
+                onerror="this.src='https://tse2.mm.bing.net/th/id/OIP.Ct30McAoRmpZ0OH8ii6oeAHaHa?pid=Api&P=0&h=220'" />
+                <!-- <div class="card-badge">Popular</div> -->
+              </div>
+              <div class="card-content   m-0">
+                <div class="card-body  p-0  ">
+                  <h3 class="card-title   mb-0  ">{{item.title}} Course</h3>
+                  <p class="card-description   mb-0 ">
+                    {{item.description}}.
+                  </p>
+
+                  <div class="card-price  mb-0 ">${{item.price}}</div>
+                </div>
+                <a href="#" class="card-link mt-0">Enroll Now</a>
+              </div>
+            </div>
+          </article>
+
+
+          }
+
+        </div>
+
+        <!-- <div class="carousel-nav">
+          <button class="nav-btn" id="prev-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="nav-btn" id="next-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div> -->
+
+
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Hero Section -->
+
+
+    <!-- AI Courses Section -->
+    <!-- <section class="courses ai">
+        <h2>Artificial Intelligence Courses 🤖</h2>
+        <div class="course-grid">
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="">
+                <h3>Introduction to AI</h3>
+                <p>Understand the basics of Artificial Intelligence and its real-world applications.</p>
+                <button class="btn">Explore</button>
+            </div>
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/1087/1087927.png" alt="">
+                <h3>Machine Learning Fundamentals</h3>
+                <p>Dive into supervised and unsupervised learning techniques.</p>
+                <button class="btn">Explore</button>
+            </div>
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2103/2103338.png" alt="">
+                <h3>Deep Learning with Python</h3>
+                <p>Build neural networks using TensorFlow and Keras.</p>
+                <button class="btn">Explore</button>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Data Analysis Courses Section -->
+    <!-- <section class="courses data">
+        <h2>Data Analysis Courses 📊</h2>
+        <div class="course-grid">
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2641/2641405.png" alt="">
+                <h3>Excel for Data Analysis</h3>
+                <p>Master data cleaning and visualization in Excel.</p>
+                <button class="btn">Explore</button>
+            </div>
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2103/2103640.png" alt="">
+                <h3>Python for Data Science</h3>
+                <p>Learn to analyze data and create insights using Pandas and NumPy.</p>
+                <button class="btn">Explore</button>
+            </div>
+            <div class="course-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3143/3143629.png" alt="">
+                <h3>Power BI & Visualization</h3>
+                <p>Create interactive dashboards and professional reports.</p>
+                <button class="btn">Explore</button>
+            </div>
+        </div>
+
+    </section> -->
+
+
+    <!-- Footer -->
+<app-footer></app-footer>
+    <!-- </section> -->
+<!-- Footer -->
+<!-- <footer>
+  <div class="footer-content">
+    <h3>Join Neuro Platform</h3>
+    <p>Empower learners with your knowledge! Become an instructor and help shape the future of AI and Data Science education.</p>
+    <div class="footer-btn">
+      <button class="btn" routerLink="/auth/registerinstructor">
+        👩‍🏫 Register as Instructor
+      </button>
+    </div>
+
+    <div class="socials">
+      <a href="#">Facebook</a> |
+      <a href="#">Twitter</a> |
+      <a href="#">LinkedIn</a> |
+      <a href="#">Instagram</a>
+    </div>
+
+    <div class="copyright">
+      © 2025 Neuro Platform. All Rights Reserved.
+    </div>
+  </div>
+</footer> -->
+<!-- </body> -->
+
+

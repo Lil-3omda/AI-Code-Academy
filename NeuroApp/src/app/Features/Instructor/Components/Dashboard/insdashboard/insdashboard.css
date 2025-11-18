@@ -1,0 +1,218 @@
+    /* Main Content */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    /* Header */
+    .header {
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+    }
+
+    .search-box {
+      background-color: #f5f7fb;
+      border-radius: 50px;
+      padding: 8px 15px;
+      border: none;
+      width: 300px;
+    }
+
+    .user-profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+      border-left: 4px solid var(--primary);
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stats-card .icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+
+    .stats-card.courses .icon { background-color: var(--primary); }
+    .stats-card.students .icon { background-color: var(--success); }
+    .stats-card.earnings .icon { background-color: var(--warning); }
+    .stats-card.rating .icon { background-color: var(--info); }
+
+    /* Progress Bars */
+    .progress {
+      height: 8px;
+      border-radius: 10px;
+    }
+
+    /* Recent Activity & Top Courses */
+    .recent-activity, .top-courses {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: white;
+    }
+
+    .activity-icon.course { background-color: var(--primary); }
+    .activity-icon.student { background-color: var(--success); }
+    .activity-icon.earning { background-color: var(--warning); }
+
+    /* Course Cards */
+    .course-card {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s;
+      margin-bottom: 20px;
+    }
+
+    .course-card:hover { transform: translateY(-5px); }
+
+    .course-card img {
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .course-card .card-body { padding: 15px; }
+
+    .course-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: var(--primary);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    /* ===========================
+   Responsive Dashboard Layout
+=========================== */
+
+/* For Tablets and Smaller Screens */
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 0; /* Remove sidebar space */
+    padding: 15px;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* Hidden by default */
+    width: 250px;
+    height: 100vh;
+    background-color: #0d6efd;
+    transition: left 0.3s ease;
+    z-index: 1050;
+  }
+
+  .sidebar.active {
+    left: 0; /* Show when toggled */
+  }
+
+  /* Add a toggle button in header */
+  .header::before {
+    content: "\2630"; /* ☰ hamburger icon */
+    font-size: 24px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: #0d6efd;
+  }
+
+  .header {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  /* Adjust header layout */
+  .header .input-group {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* Dim background when sidebar is open */
+  body.menu-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1049;
+  }
+}
+
+/* Small Phones (≤ 576px) */
+@media (max-width: 576px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 15px;
+  }
+
+  .header h3 {
+    font-size: 1.2rem;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .stats-card {
+    text-align: center;
+  }
+
+  .stats-card .icon {
+    margin: 0 auto 10px;
+  }
+
+  .recent-activity, .top-courses {
+    padding: 15px;
+  }
+
+  .course-card img {
+    height: 140px;
+  }
+}

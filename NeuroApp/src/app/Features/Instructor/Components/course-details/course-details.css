@@ -1,0 +1,63 @@
+/* Hero Section */
+.instructor-hero {
+  background: linear-gradient(to right, #0d6efd, #6610f2);
+  color: white;
+  min-height: 40vh;
+  position: relative;
+  overflow: hidden;
+}
+.instructor-hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.15),
+    transparent 60%
+  );
+  transform: rotate(25deg);
+}
+
+/* Cards */
+.card {
+  border-radius: 15px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Accordion */
+.accordion-button {
+  font-weight: 600;
+}
+.accordion-button:not(.collapsed) {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+/* Sidebar */
+.social-icons i:hover {
+  transform: scale(1.1);
+  transition: 0.2s ease;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .instructor-hero {
+    min-height: 30vh;
+  }
+  .card {
+    margin-bottom: 1rem;
+  }
+}

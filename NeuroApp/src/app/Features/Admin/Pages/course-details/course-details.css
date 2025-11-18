@@ -1,0 +1,21 @@
+.object-fit-cover {
+  object-fit: cover;
+}
+
+.card-title {
+  font-size: 1.8rem;
+}
+
+.card-body p {
+  font-size: 1rem;
+}
+
+.list-group-item {
+  background-color: transparent;
+  border: none;
+  padding-left: 0;
+}
+
+.btn {
+  border-radius: 8px;
+}

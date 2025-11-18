@@ -1,0 +1,97 @@
+<app-navbar></app-navbar>
+
+<!-- Search & Filters -->
+<section class="search-section mt-5">
+  <div class="container">
+    <div class="search-container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="search-box">
+            <input type="text" class="form-control" placeholder="Search for courses, skills, or instructors..."
+              (input)="onSearchChange($event)" />
+            <i class="fas fa-search search-icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-buttons">
+        <button class="filter-btn" [class.active]="selectedCategory === 'All'" (click)="filterByCategory('All')">
+          <i class="fas fa-th-large"></i> All
+        </button>
+
+        @for (cat of categories; track $index) {
+        <button class="filter-btn" [class.active]="selectedCategory === cat" (click)="filterByCategory(cat)">
+          <i class="fas fa-book"></i> {{ cat }}
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Courses Section -->
+<section class="courses-section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Popular Courses</h2>
+      <p>Discover our most popular courses based on student enrollment and ratings</p>
+    </div>
+
+    <div class="row">
+      @for (item of filteredCourses; track $index) {
+      <div class="col-lg-4 col-md-6 mb-4" (click)="showCourseDetails(item?.id ?? 0)">
+        <div class="course-card">
+          <div class="course-img-container">
+            <img [src]="getImageUrl(item.thumbnailUrl)" alt="Course Thumbnail" class="img-fluid rounded-3 shadow-sm"
+              onerror="this.src='https://tse2.mm.bing.net/th/id/OIP.Ct30McAoRmpZ0OH8ii6oeAHaHa?pid=Api&P=0&h=220'" />
+            <span class="course-category">{{ item.categoryName }}</span>
+          </div>
+          <div class="card-body">
+            <h5 class="course-title">{{ item.title }}</h5>
+            <div class="course-instructor">
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Instructor" />
+              <span>{{ item.instructorName }}</span>
+            </div>
+            <p class="card-text">{{ item.description }}</p>
+            <div class="course-price">
+              <div>${{ item.price }}</div>
+              <button class="enroll-btn" *ngIf="!isEnrolled(item.id)" (click)="enroll(item.id)">
+                Enroll Now
+              </button>
+              <button class="enrolled-btn btn btn-success" *ngIf="isEnrolled(item.id)">
+                Enrolled
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <!-- <div class="pagination-container text-center">
+      <nav aria-label="Course pagination">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="#" aria-label="Previous">
+              <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+            </a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-dots">...</li>
+          <li class="page-item"><a class="page-link" href="#">8</a></li>
+          <li class="page-item">
+            <a class="page-link" href="#" aria-label="Next">
+              <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div> -->
+  </div>
+</section>
+
+<!-- Footer -->
+<app-footer></app-footer>

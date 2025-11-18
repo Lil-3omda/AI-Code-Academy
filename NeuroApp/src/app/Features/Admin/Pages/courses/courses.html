@@ -1,0 +1,244 @@
+<div class="admin-courses">
+  <div class="header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="mb-0">Course Management</h3>
+      <p class="text-muted mb-0">Manage all AI courses on the platform</p>
+    </div>
+    <div class="d-flex align-items-center">
+      <div class="input-group me-3">
+        <input
+          type="text"
+          class="form-control search-box"
+          placeholder="Search courses..."
+          (input)="onSearch($event)">
+        <span class="input-group-text bg-transparent border-0">
+          <i class="fas fa-search"></i>
+        </span>
+      </div>
+      <button class="btn btn-primary" (click)="showAddCourseModal()">
+        <i class="fas fa-plus me-2"></i>Add Course
+      </button>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="loading">
+    <div class="col-12 text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3">Loading courses...</p>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-12">
+      <div class="table-container">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Type</th>
+              <th>Instructor</th>
+              <th>Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let course of getFilteredCourses()">
+              <td>{{ course.id }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <img
+                    *ngIf="course.thumbnailUrl"
+                    [src]="course.thumbnailUrl"
+                    alt="{{ course.title }}"
+                    class="course-thumbnail me-2"
+                    onerror="this.src='https://via.placeholder.com/50'">
+                  <strong>{{ course.title }}</strong>
+                </div>
+              </td>
+              <td>
+                <span class="description-text">{{ course.description }}</span>
+              </td>
+              <td>
+                <span *ngIf="course.isFree" class="badge bg-success">Free</span>
+                <span *ngIf="!course.isFree">${{ course.price }}</span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="course.isFree ? 'bg-success' : 'bg-primary'">
+                  {{ course.isFree ? 'Free' : 'Paid' }}
+                </span>
+              </td>
+              <td>{{ getInstructorName(course.instructorId) }}</td>
+              <td>{{ getCategoryName(course.categoryId) }}</td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-sm btn-outline-primary me-1"
+                    (click)="editCourse(course)"
+                    title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="confirmDelete(course)"
+                    title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="getFilteredCourses().length === 0">
+              <td colspan="8" class="text-center text-muted py-4">
+                <i class="fas fa-graduation-cap fa-3x mb-3 d-block"></i>
+                No courses found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" *ngIf="showAddModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Course</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Title *</label>
+              <input type="text" class="form-control" [(ngModel)]="newCourse.title" name="title" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Category *</label>
+              <select class="form-select" [(ngModel)]="newCourse.categoryId" name="categoryId" required>
+                <option value="0">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description *</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="newCourse.description" name="description" required></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Instructor *</label>
+              <select class="form-select" [(ngModel)]="newCourse.instructorId" name="instructorId" required>
+                <option value="0">Select Instructor</option>
+                <option *ngFor="let instructor of instructors" [value]="instructor.id">{{ instructor.expertise }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Thumbnail URL</label>
+              <input type="url" class="form-control" [(ngModel)]="newCourse.thumbnailUrl" name="thumbnailUrl">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="newCourse.isFree" name="isFree" id="isFree">
+                <label class="form-check-label" for="isFree">Free Course</label>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3" *ngIf="!newCourse.isFree">
+              <label class="form-label">Price ($)</label>
+              <input type="number" class="form-control" [(ngModel)]="newCourse.price" name="price" min="0" step="0.01">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="addCourse()">Add Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Course Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" *ngIf="showEditModal && selectedCourse">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Course</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Title *</label>
+              <input type="text" class="form-control" [(ngModel)]="selectedCourse.title" name="title" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Category *</label>
+              <select class="form-select" [(ngModel)]="selectedCourse.categoryId" name="categoryId" required>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description *</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="selectedCourse.description" name="description" required></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Thumbnail URL</label>
+              <input type="url" class="form-control" [(ngModel)]="selectedCourse.thumbnailUrl" name="thumbnailUrl">
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="selectedCourse.isFree" name="isFree" id="editIsFree">
+                <label class="form-check-label" for="editIsFree">Free Course</label>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="!selectedCourse.isFree">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Price ($)</label>
+              <input type="number" class="form-control" [(ngModel)]="selectedCourse.price" name="price" min="0" step="0.01">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateCourse()">Update Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" *ngIf="showDeleteModal && selectedCourse">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the course <strong>"{{ selectedCourse.title }}"</strong>?</p>
+        <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteCourse()">Delete Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showAddModal || showEditModal || showDeleteModal"></div>

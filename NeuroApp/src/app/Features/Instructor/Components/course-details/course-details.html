@@ -1,0 +1,135 @@
+<!-- Instructor Course Details Page -->
+<section class="instructor-hero d-flex align-items-center justify-content-center text-center">
+  <div class="container">
+    <h1 class="display-5 fw-bold">{{ courseDetails?.title ?? 'Course Title' }}</h1>
+    <p class="lead mt-3 text-light">
+      Manage and review your course information and progress.
+    </p>
+  </div>
+</section>
+
+<div class="container my-5">
+  <div class="row g-4">
+    <!-- Course Overview Card -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>Course Overview</h5>
+        </div>
+        <div class="card-body">
+          <h4 class="fw-bold">{{ courseDetails?.title ?? 'N/A' }}</h4>
+          <p class="text-muted mb-2">Category: {{ courseDetails?.categoryName ?? 'N/A' }}</p>
+          <p>{{ courseDetails?.description ?? 'No description provided.' }}</p>
+
+          <div class="mt-4">
+            <span class="badge bg-success p-2 me-2"
+              ><i class="fas fa-dollar-sign me-1"></i>{{ courseDetails?.price ?? 0 }} USD</span
+            >
+            <!-- <span class="badge bg-info p-2"
+              ><i class="fas fa-users me-1"></i>{{ courseDetails?. ?? 0 }}
+              Students</span
+            > -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modules Section -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Modules</h5>
+        </div>
+        <div class="card-body">
+          @if (modules.length == 0) {
+          <p class="text-muted">No modules added yet.</p>
+          } @else {
+          <div class="accordion" id="modulesAccordion">
+            @for (module of modules; track $index) {
+            <div class="accordion-item mb-3">
+              <h2 class="accordion-header" id="heading{{ $index }}">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#collapse' + $index"
+                >
+                  <i class="fas fa-folder-open me-2 text-primary"></i>
+                  {{ module.title }}
+                </button>
+              </h2>
+              <div
+                [attr.id]="'collapse' + $index"
+                class="accordion-collapse collapse"
+                [attr.aria-labelledby]="'heading' + $index"
+                data-bs-parent="#modulesAccordion"
+              >
+                <div class="accordion-body">
+                  @if (module.videos?.length == 0) {
+                  <p class="text-muted">No videos in this module.</p>
+                  } @else {
+                  <ul class="list-group list-group-flush">
+                    @for (video of module.videos; track $index) {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <span><i class="fas fa-play-circle text-primary me-2"></i>{{ video.title }}</span>
+                      <small class="text-muted">{{ video.duration }}s</small>
+                    </li>
+                    }
+                  </ul>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Analytics Section -->
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Course Analytics</h5>
+        </div>
+        <div class="card-body text-center">
+          <p class="text-muted">Coming Soon: Analytics for views, engagement & completion rates.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Instructor Info -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center">
+          <img
+            src="https://randomuser.me/api/portraits/men/45.jpg"
+            alt="Instructor"
+            class="rounded-circle mb-3"
+            width="120"
+          />
+          <h5 class="fw-bold">Dr. {{ InstDetails?.fullName ?? 'Unknown' }}</h5>
+          <p class="text-muted mb-2">{{ InstDetails?.qualifications ?? 'Instructor' }}</p>
+          <div class="social-icons mt-3">
+            <a [href]="InstDetails?.linkedIn" target="_blank"
+              ><i class="fab fa-linkedin fa-lg text-primary me-3"></i
+            ></a>
+            <a href="mailto:{{ InstDetails?.email }}"
+              ><i class="fas fa-envelope fa-lg text-danger"></i
+            ></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Manage Course</h5>
+        </div>
+        <div class="card-body d-grid gap-2">
+          <button class="btn btn-outline-primary" [routerLink]="['/instructor/EditCourse', id]"><i class="fas fa-edit me-2"></i>Edit Course</button>
+          <button class="btn btn-outline-success" [routerLink]="['/instructor/AddModule']"><i class="fas fa-plus me-2"></i>Add Module</button>
+          <button class="btn btn-outline-danger" (click)="deleteCourse()"><i class="fas fa-trash-alt me-2"></i>Delete Course</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

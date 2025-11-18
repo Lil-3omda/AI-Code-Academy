@@ -1,0 +1,20 @@
+<header>
+  <div class="logo">
+    <img src="Artboard 20.png" alt="NeuroApp Logo" />
+  </div>
+
+  <!-- Hamburger Button (visible only on small screens) -->
+  <button class="menu-toggle" (click)="toggleMenu()">
+    ☰
+  </button>
+
+  <nav [class.active]="isMenuOpen">
+    <a routerLink="/home">Home</a>
+    <a routerLink="/AllCourses">Courses</a>
+    <a routerLink="/my-learning">My Learning</a>
+    <a routerLink="/profile">Profile</a>
+
+    <button *ngIf="!isAuthenticated" class="btn" routerLink="/auth/login">Login</button>
+    <button *ngIf="isAuthenticated" class="btn logout-btn" (click)="logout()">Logout</button>
+  </nav>
+</header>
