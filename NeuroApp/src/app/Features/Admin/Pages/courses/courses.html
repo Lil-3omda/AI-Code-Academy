@@ -51,12 +51,24 @@
               <td>{{ course.id }}</td>
               <td>
                 <div class="d-flex align-items-center">
-                  <img
+                  <div 
                     *ngIf="course.thumbnailUrl"
-                    [src]="course.thumbnailUrl"
-                    alt="{{ course.title }}"
                     class="course-thumbnail me-2"
-                    onerror="this.src='https://via.placeholder.com/50'">
+                    [style.background-image]="'url(' + course.thumbnailUrl + ')'"
+                    [style.background-size]="'cover'"
+                    [style.background-position]="'center'"
+                    [style.width]="'50px'"
+                    [style.height]="'50px'"
+                    [style.border-radius]="'4px'">
+                  </div>
+                  <div 
+                    *ngIf="!course.thumbnailUrl"
+                    class="course-thumbnail me-2 bg-secondary text-white d-flex align-items-center justify-content-center"
+                    [style.width]="'50px'"
+                    [style.height]="'50px'"
+                    [style.border-radius]="'4px'">
+                    <i class="fas fa-graduation-cap"></i>
+                  </div>
                   <strong>{{ course.title }}</strong>
                 </div>
               </td>
@@ -140,8 +152,16 @@
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Thumbnail URL</label>
-              <input type="url" class="form-control" [(ngModel)]="newCourse.thumbnailUrl" name="thumbnailUrl">
+              <label class="form-label">Thumbnail</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onThumbnailSelected($event, false)" name="thumbnailFile">
+              <small class="text-muted">Upload a thumbnail image for the course</small>
+              <div *ngIf="thumbnailFile" class="mt-2">
+                <small class="text-success">Selected: {{ thumbnailFile.name }}</small>
+              </div>
+              <div class="mt-2">
+                <label class="form-label">Or enter URL</label>
+                <input type="url" class="form-control" [(ngModel)]="newCourse.thumbnailUrl" name="thumbnailUrl" placeholder="https://...">
+              </div>
             </div>
           </div>
           <div class="row">
@@ -188,14 +208,30 @@
               </select>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Instructor *</label>
+              <select class="form-select" [(ngModel)]="selectedCourse.instructorId" name="instructorId" required>
+                <option *ngFor="let instructor of instructors" [value]="instructor.id">{{ instructor.expertise }}</option>
+              </select>
+            </div>
+          </div>
           <div class="mb-3">
             <label class="form-label">Description *</label>
             <textarea class="form-control" rows="3" [(ngModel)]="selectedCourse.description" name="description" required></textarea>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">Thumbnail URL</label>
-              <input type="url" class="form-control" [(ngModel)]="selectedCourse.thumbnailUrl" name="thumbnailUrl">
+              <label class="form-label">Thumbnail</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onThumbnailSelected($event, true)" name="editThumbnailFile">
+              <small class="text-muted">Upload a new thumbnail image (optional)</small>
+              <div *ngIf="editThumbnailFile" class="mt-2">
+                <small class="text-success">Selected: {{ editThumbnailFile.name }}</small>
+              </div>
+              <div class="mt-2">
+                <label class="form-label">Or enter URL</label>
+                <input type="url" class="form-control" [(ngModel)]="selectedCourse.thumbnailUrl" name="thumbnailUrl" placeholder="https://...">
+              </div>
             </div>
             <div class="col-md-6 mb-3">
               <div class="form-check">

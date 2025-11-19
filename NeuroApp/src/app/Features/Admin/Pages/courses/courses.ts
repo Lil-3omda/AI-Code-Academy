@@ -32,6 +32,9 @@ export class AdminCourses implements OnInit {
     categoryId: 0
   };
 
+  thumbnailFile: File | null = null;
+  editThumbnailFile: File | null = null;
+
   constructor(private adminService: AdminService, private cdr: ChangeDetectorRef  ) {}
 
   ngOnInit() {
@@ -91,6 +94,7 @@ export class AdminCourses implements OnInit {
       instructorId: 0,
       categoryId: 0
     };
+    this.thumbnailFile = null;
     this.showAddModal = true;
   }
 
@@ -100,38 +104,44 @@ export class AdminCourses implements OnInit {
       return;
     }
 
-    this.adminService.createCourse(this.newCourse).subscribe({
+    this.loading = true;
+    this.adminService.createCourse(this.newCourse, this.thumbnailFile || undefined).subscribe({
       next: (course) => {
-        this.courses.push(course);
+        this.loadCourses(); // Reload to get updated data
         this.showAddModal = false;
+        this.thumbnailFile = null;
+        this.loading = false;
         this.showSuccessMessage('Course created successfully');
       },
       error: (error) => {
         console.error('Error creating course:', error);
-        this.showErrorMessage('Failed to create course');
+        this.loading = false;
+        this.showErrorMessage('Failed to create course: ' + (error.error?.message || error.message || 'Unknown error'));
       }
     });
   }
 
   editCourse(course: ICourse) {
     this.selectedCourse = { ...course };
+    this.editThumbnailFile = null;
     this.showEditModal = true;
   }
 
  updateCourse() {
-  if (this.selectedCourse?.id != null) { // ensures id is not undefined or null
-    this.adminService.updateCourse(this.selectedCourse.id, this.selectedCourse).subscribe({
+  if (this.selectedCourse?.id != null) {
+    this.loading = true;
+    this.adminService.updateCourse(this.selectedCourse.id, this.selectedCourse, this.editThumbnailFile || undefined).subscribe({
       next: () => {
-        const index = this.courses.findIndex(c => c.id === this.selectedCourse?.id);
-        if (index !== -1) {
-          this.courses[index] = { ...this.selectedCourse! }; // non-null assertion
-        }
+        this.loadCourses(); // Reload to get updated data
         this.showEditModal = false;
+        this.editThumbnailFile = null;
+        this.loading = false;
         this.showSuccessMessage('Course updated successfully');
       },
       error: (error) => {
         console.error('Error updating course:', error);
-        this.showErrorMessage('Failed to update course');
+        this.loading = false;
+        this.showErrorMessage('Failed to update course: ' + (error.error?.message || error.message || 'Unknown error'));
       }
     });
   } else {
@@ -139,17 +149,20 @@ export class AdminCourses implements OnInit {
   }
 }
 
-deleteCourse() {
+  deleteCourse() {
   if (this.selectedCourse?.id != null) {
+    this.loading = true;
     this.adminService.deleteCourse(this.selectedCourse.id).subscribe({
       next: () => {
-        this.courses = this.courses.filter(c => c.id !== this.selectedCourse?.id);
+        this.loadCourses(); // Reload to get updated data
         this.showDeleteModal = false;
+        this.loading = false;
         this.showSuccessMessage('Course deleted successfully');
       },
       error: (error) => {
         console.error('Error deleting course:', error);
-        this.showErrorMessage('Failed to delete course');
+        this.loading = false;
+        this.showErrorMessage('Failed to delete course: ' + (error.error?.message || error.message || 'Unknown error'));
       }
     });
   } else {
@@ -192,11 +205,24 @@ deleteCourse() {
     return instructor ? instructor.expertise : 'Unknown Instructor';
   }
 
+  onThumbnailSelected(event: Event, isEdit: boolean = false) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      if (isEdit) {
+        this.editThumbnailFile = input.files[0];
+      } else {
+        this.thumbnailFile = input.files[0];
+      }
+    }
+  }
+
   closeModals() {
     this.showAddModal = false;
     this.showEditModal = false;
     this.showDeleteModal = false;
     this.selectedCourse = null;
+    this.thumbnailFile = null;
+    this.editThumbnailFile = null;
   }
 
   private showSuccessMessage(message: string) {

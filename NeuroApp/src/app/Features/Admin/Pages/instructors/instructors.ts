@@ -66,15 +66,18 @@ export class AdminInstructors implements OnInit {
       return;
     }
 
+    this.loading = true;
     this.adminService.registerInstructor(this.newInstructor).subscribe({
       next: (instructor) => {
-        this.instructors.push(instructor);
+        this.loadInstructors(); // Reload to get updated data
         this.showAddModal = false;
+        this.loading = false;
         this.showSuccessMessage('Instructor registered successfully');
       },
       error: (error) => {
         console.error('Error registering instructor:', error);
-        this.showErrorMessage('Failed to register instructor');
+        this.loading = false;
+        this.showErrorMessage('Failed to register instructor: ' + (error.error?.message || error.message || 'Unknown error'));
       }
     });
   }
@@ -86,18 +89,18 @@ export class AdminInstructors implements OnInit {
 
   verifyInstructor() {
     if (this.selectedInstructor) {
+      this.loading = true;
       this.adminService.verifyInstructor(this.selectedInstructor.id).subscribe({
         next: () => {
-          const instructor = this.instructors.find(i => i.id === this.selectedInstructor?.id);
-          if (instructor) {
-            instructor.isVerified = true;
-          }
+          this.loadInstructors(); // Reload to get updated data
           this.showVerifyModal = false;
+          this.loading = false;
           this.showSuccessMessage('Instructor verified successfully');
         },
         error: (error) => {
           console.error('Error verifying instructor:', error);
-          this.showErrorMessage('Failed to verify instructor');
+          this.loading = false;
+          this.showErrorMessage('Failed to verify instructor: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }

@@ -66,17 +66,15 @@ export class AdminEnrollments implements OnInit {
 
   cancelEnrollment(enrollmentId: number) {
     if (confirm('Are you sure you want to cancel this enrollment?')) {
+      this.loading = true;
       this.adminService.cancelEnrollment(enrollmentId).subscribe({
         next: () => {
-          const enrollment = this.enrollments.find(e => e.enrollmentId === enrollmentId);
-          if (enrollment) {
-            enrollment.status = 'Cancelled';
-          }
-          this.filterEnrollments();
+          this.loadEnrollments(); // Reload to get updated data
         },
         error: (error) => {
           console.error('Error cancelling enrollment:', error);
-          alert('Failed to cancel enrollment');
+          this.loading = false;
+          alert('Failed to cancel enrollment: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }
@@ -84,15 +82,16 @@ export class AdminEnrollments implements OnInit {
 
   deleteEnrollment(enrollmentId: number) {
     if (confirm('Are you sure you want to delete this enrollment? This action cannot be undone.')) {
+      this.loading = true;
       this.adminService.deleteEnrollment(enrollmentId).subscribe({
         next: () => {
-          this.enrollments = this.enrollments.filter(e => e.enrollmentId !== enrollmentId);
-          this.filterEnrollments();
+          this.loadEnrollments(); // Reload to get updated data
           alert('Enrollment deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting enrollment:', error);
-          alert('Failed to delete enrollment');
+          this.loading = false;
+          alert('Failed to delete enrollment: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }

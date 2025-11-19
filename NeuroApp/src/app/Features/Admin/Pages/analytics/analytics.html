@@ -5,11 +5,24 @@
     <p class="text-muted">Course platform insights and performance metrics</p>
   </div>
 
+  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status"></div>
-    <p class="mt-3">Loading analytics...</p>
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3 text-muted">Loading analytics data...</p>
   </div>
 
+  <!-- Error State -->
+  <div *ngIf="!loading && !analytics" class="text-center py-5">
+    <div class="alert alert-warning" role="alert">
+      <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+      <h5>Unable to load analytics</h5>
+      <p class="mb-0">Please try refreshing the page or contact support if the problem persists.</p>
+    </div>
+  </div>
+
+  <!-- Analytics Content -->
   <div *ngIf="!loading && analytics">
     <!-- Overview Stats -->
     <div class="row mb-4">
@@ -64,10 +77,13 @@
             <i class="fas fa-chalkboard-teacher"></i>
           </div>
           <div class="stats-content">
-            <h3>142</h3>
+            <h3>{{ analytics.totalInstructors | number }}</h3>
             <p class="text-muted mb-0">Total Instructors</p>
-            <small class="text-success">
-              <i class="fas fa-arrow-up"></i> 12 verified this month
+            <small class="text-warning" *ngIf="analytics.pendingInstructors > 0">
+              <i class="fas fa-clock"></i> {{ analytics.pendingInstructors }} pending verification
+            </small>
+            <small class="text-success" *ngIf="analytics.pendingInstructors === 0">
+              <i class="fas fa-check-circle"></i> All verified
             </small>
           </div>
         </div>
@@ -82,25 +98,27 @@
           <div class="chart-header">
             <h5><i class="fas fa-chart-bar me-2"></i>Enrollments Overview</h5>
             <div class="btn-group btn-group-sm" role="group">
-              <button type="button" class="btn btn-outline-primary active">6 Months</button>
-              <button type="button" class="btn btn-outline-primary">1 Year</button>
-              <button type="button" class="btn btn-outline-primary">All Time</button>
+              <button type="button" class="btn btn-outline-primary active" disabled>Last 6 Months</button>
             </div>
           </div>
-          <div class="chart-body">
-            <div class="bar-chart">
+            <div class="chart-body">
+            <div class="bar-chart" *ngIf="analytics.enrollmentsByMonth.length > 0">
               <div class="chart-bars">
                 <div class="bar-item" *ngFor="let month of analytics.enrollmentsByMonth">
                   <div class="bar-wrapper">
                     <div class="bar-fill"
                          [style.height.%]="getEnrollmentPercentage(month.enrollments)"
-                         [title]="month.enrollments">
+                         [title]="month.enrollments + ' enrollments'">
                     </div>
                   </div>
                   <div class="bar-label">{{ month.month }}</div>
                   <div class="bar-value">{{ month.enrollments }}</div>
                 </div>
               </div>
+            </div>
+            <div *ngIf="analytics.enrollmentsByMonth.length === 0" class="text-center py-5 text-muted">
+              <i class="fas fa-chart-bar fa-3x mb-3"></i>
+              <p>No enrollment data available</p>
             </div>
           </div>
         </div>
@@ -113,7 +131,7 @@
             <h5><i class="fas fa-tags me-2"></i>Courses by Category</h5>
           </div>
           <div class="chart-body">
-            <div class="role-distribution">
+            <div class="role-distribution" *ngIf="analytics.coursesByCategory.length > 0">
               <div class="role-item" *ngFor="let cat of analytics.coursesByCategory; let i = index">
                 <div class="role-info">
                   <span class="role-name">{{ cat.categoryName }}</span>
@@ -128,6 +146,10 @@
                 <small class="text-muted">{{ getCategoryPercentage(cat.coursesCount) | number:'1.1-1' }}%</small>
               </div>
             </div>
+            <div *ngIf="analytics.coursesByCategory.length === 0" class="text-center py-5 text-muted">
+              <i class="fas fa-tags fa-3x mb-3"></i>
+              <p>No category data available</p>
+            </div>
           </div>
         </div>
       </div>
@@ -135,41 +157,51 @@
 
     <!-- Additional Metrics -->
     <div class="row">
-      <!-- Top Performers -->
+      <!-- Recent Enrollments -->
       <div class="col-lg-6 mb-4">
         <div class="metrics-card">
-          <h5 class="mb-4"><i class="fas fa-trophy me-2"></i>Top Performers</h5>
-          <div class="table-responsive">
-            <table class="table table-sm">
+          <h5 class="mb-4"><i class="fas fa-user-check me-2"></i>Recent Enrollments</h5>
+          <div class="table-responsive" *ngIf="analytics.recentEnrollments.length > 0">
+            <table class="table table-sm table-hover">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Metric</th>
-                  <th>Value</th>
-                  <th>Change</th>
+                  <th>Student</th>
+                  <th>Course</th>
+                  <th>Date</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><span class="badge bg-warning text-dark">1</span></td>
-                  <td>Most Popular Course</td>
-                  <td>Deep Learning</td>
-                  <td><span class="text-success">+25%</span></td>
-                </tr>
-                <tr>
-                  <td><span class="badge bg-secondary">2</span></td>
-                  <td>Top Category</td>
-                  <td>Machine Learning</td>
-                  <td><span class="text-success">+18%</span></td>
-                </tr>
-                <tr>
-                  <td><span class="badge bg-secondary">3</span></td>
-                  <td>Top Instructor</td>
-                  <td>Dr. Sarah Johnson</td>
-                  <td><span class="text-success">+32%</span></td>
+                <tr *ngFor="let enrollment of analytics.recentEnrollments">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-circle me-2 text-primary"></i>
+                      <span>{{ enrollment.studentName || 'Unknown Student' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ enrollment.courseName || 'Unknown Course' }}</small>
+                  </td>
+                  <td>
+                    <small>{{ enrollment.enrollmentDate | date: 'shortDate' }}</small>
+                  </td>
+                  <td>
+                    <span class="badge" 
+                          [ngClass]="{
+                            'bg-success': enrollment.status === 'Active',
+                            'bg-primary': enrollment.status === 'Completed',
+                            'bg-danger': enrollment.status === 'Cancelled'
+                          }">
+                      {{ enrollment.status }}
+                    </span>
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div *ngIf="analytics.recentEnrollments.length === 0" class="text-center py-4 text-muted">
+            <i class="fas fa-inbox fa-2x mb-3"></i>
+            <p class="mb-0">No recent enrollments</p>
           </div>
         </div>
       </div>
@@ -179,24 +211,28 @@
         <div class="metrics-card">
           <h5 class="mb-4"><i class="fas fa-clock me-2"></i>Performance Metrics</h5>
           <div class="metric-row">
-            <div class="metric-label">Average Course Rating</div>
-            <div class="metric-value">4.7/5.0</div>
+            <div class="metric-label">Active Students</div>
+            <div class="metric-value">{{ analytics.activeStudents | number }}</div>
+          </div>
+      <div class="metric-row">
+        <div class="metric-label">Completion Rate</div>
+        <div class="metric-value">
+          {{ completionRate | number:'1.1-1' }}%
+        </div>
+      </div>
+
+
+          <div class="metric-row">
+            <div class="metric-label">Pending Instructor Verifications</div>
+            <div class="metric-value">{{ analytics.pendingInstructors | number }}</div>
           </div>
           <div class="metric-row">
-            <div class="metric-label">Completion Rate</div>
-            <div class="metric-value">68.3%</div>
+            <div class="metric-label">Total Categories</div>
+            <div class="metric-value">{{ analytics.totalCategories | number }}</div>
           </div>
           <div class="metric-row">
-            <div class="metric-label">Student Satisfaction</div>
-            <div class="metric-value">4.8/5.0</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-label">Active Learning Hours</div>
-            <div class="metric-value">12,450</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-label">Growth Rate</div>
-            <div class="metric-value text-success">+15.7%</div>
+            <div class="metric-label">Recent Enrollments (Last 10)</div>
+            <div class="metric-value">{{ analytics.recentEnrollments.length | number }}</div>
           </div>
         </div>
       </div>

@@ -15,6 +15,9 @@
           <i class="fas fa-search"></i>
         </span>
       </div>
+      <button class="btn btn-primary" (click)="showAddInstructorModal()">
+        <i class="fas fa-plus me-2"></i>Add Instructor
+      </button>
     </div>
   </div>
 
@@ -115,3 +118,70 @@
     </div>
   </div>
 </div>
+
+<!-- Add Instructor Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" *ngIf="showAddModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Register New Instructor</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="newInstructor.name" name="name" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" [(ngModel)]="newInstructor.email" name="email" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Password *</label>
+              <input type="password" class="form-control" [(ngModel)]="newInstructor.password" name="password" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Expertise *</label>
+              <input type="text" class="form-control" [(ngModel)]="newInstructor.expertise" name="expertise" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="newInstructor.bio" name="bio"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="addInstructor()">Register Instructor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Verify Instructor Modal -->
+<div class="modal fade" [class.show]="showVerifyModal" [style.display]="showVerifyModal ? 'block' : 'none'" *ngIf="showVerifyModal && selectedInstructor">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Verify Instructor</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to verify instructor <strong>{{ selectedInstructor.expertise }}</strong>?</p>
+        <p class="text-info"><i class="fas fa-info-circle"></i> This will mark the instructor as verified.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-success" (click)="verifyInstructor()">Verify Instructor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showAddModal || showVerifyModal"></div>

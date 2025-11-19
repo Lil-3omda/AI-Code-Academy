@@ -13,22 +13,24 @@
         <span class="input-group-text bg-transparent border-0"><i class="fas fa-search"></i></span>
       </div>
 
-      <div class="dropdown me-3">
+      <!-- <div class="dropdown me-3">
         <a class="btn btn-light position-relative" href="#" role="button" data-bs-toggle="dropdown">
           <i class="fas fa-bell"></i>
           <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">5</span>
         </a>
-      </div>
+      </div> -->
 
-      <div class="dropdown">
+      <!--       <div class="dropdown">
         <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Admin" class="rounded-circle me-2" width="40" height="40">
+          <div class="rounded-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <i class="fas fa-user"></i>
+          </div>
           <div class="d-none d-md-block">
             <div>Admin User</div>
             <small class="text-muted">Administrator</small>
           </div>
         </a>
-      </div>
+      </div> -->
     </div>
   </div>
 
@@ -126,13 +128,25 @@
             </thead>
             <tbody>
               <tr *ngFor="let enrollment of recentEnrollments">
-                <td>{{ enrollment.studentName }}</td>
-                <td>{{ enrollment.courseName }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle me-2 text-primary"></i>
+                    <span>{{ enrollment.studentName || 'Unknown Student' }}</span>
+                  </div>
+                </td>
+                <td>{{ enrollment.courseName || 'Unknown Course' }}</td>
                 <td>{{ enrollment.enrollmentDate | date: 'short' }}</td>
-                <td><span class="badge bg-{{ getStatusClass(enrollment.status) }}">{{ enrollment.status }}</span></td>
+                <td>
+                  <span class="badge bg-{{ getStatusClass(enrollment.status) }}">
+                    {{ enrollment.status }}
+                  </span>
+                </td>
               </tr>
               <tr *ngIf="recentEnrollments.length === 0">
-                <td colspan="4" class="text-center text-muted">No recent enrollments</td>
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                  No recent enrollments
+                </td>
               </tr>
             </tbody>
           </table>

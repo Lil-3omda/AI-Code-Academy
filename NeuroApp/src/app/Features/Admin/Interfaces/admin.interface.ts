@@ -42,6 +42,7 @@ export interface ICourseUpdate {
   price?: number;
   isFree?: boolean;
   categoryId?: number;
+  instructorId?: number;
 }
 
 // Instructor Interfaces
@@ -109,6 +110,7 @@ export interface IModuleUpdate {
   moduleName?: string;
   moduleDescription?: string;
   moduleOrder?: number;
+  courseId?: number; // Added for backend compatibility
 }
 
 // Video Interfaces

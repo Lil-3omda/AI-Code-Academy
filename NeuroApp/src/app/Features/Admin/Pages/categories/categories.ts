@@ -72,23 +72,18 @@ export class AdminCategories implements OnInit {
       isActive: this.newCategory.isActive
     };
 
+    this.loading = true;
     this.adminService.createCategory(categoryData).subscribe({
       next: (category: any) => {
-        this.categories.push({
-          id: category.id as number,
-          name: category.name,
-          description: category.description || '',
-          isActive: category.isActive,
-          coursesCount: 0,
-          createdAt: new Date()
-        } as ICategory);
+        this.loadCategories(); // Reload to get updated data
         this.showAddModal = false;
+        this.loading = false;
         alert('Category created successfully');
-        this.loadCategories();
       },
       error: (error) => {
         console.error('Error creating category:', error);
-        alert('Failed to create category');
+        this.loading = false;
+        alert('Failed to create category: ' + (error.error?.message || error.message || 'Unknown error'));
       }
     });
   }
@@ -107,25 +102,18 @@ export class AdminCategories implements OnInit {
         isActive: this.selectedCategory.isActive
       };
 
+      this.loading = true;
       this.adminService.updateCategory(this.selectedCategory.id, updateData).subscribe({
         next: (updated: any) => {
-          const index = this.categories.findIndex(c => c.id === this.selectedCategory?.id);
-          if (index !== -1) {
-            this.categories[index] = {
-              id: updated.id as number,
-              name: updated.name,
-              description: updated.description || '',
-              isActive: updated.isActive,
-              coursesCount: this.categories[index].coursesCount,
-              createdAt: updated.createdAt || this.categories[index].createdAt
-            } as ICategory;
-          }
+          this.loadCategories(); // Reload to get updated data
           this.showEditModal = false;
+          this.loading = false;
           alert('Category updated successfully');
         },
         error: (error) => {
           console.error('Error updating category:', error);
-          alert('Failed to update category');
+          this.loading = false;
+          alert('Failed to update category: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }
@@ -138,15 +126,18 @@ export class AdminCategories implements OnInit {
 
   deleteCategory() {
     if (this.selectedCategory) {
+      this.loading = true;
       this.adminService.deleteCategory(this.selectedCategory.id).subscribe({
         next: () => {
-          this.categories = this.categories.filter(c => c.id !== this.selectedCategory?.id);
+          this.loadCategories(); // Reload to get updated data
           this.showDeleteModal = false;
+          this.loading = false;
           alert('Category deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting category:', error);
-          alert('Failed to delete category');
+          this.loading = false;
+          alert('Failed to delete category: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }

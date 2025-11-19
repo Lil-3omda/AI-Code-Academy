@@ -81,15 +81,17 @@ export class AdminContent implements OnInit {
 
   deleteModule(moduleId: number) {
     if (confirm('Are you sure you want to delete this module? All associated videos will also be deleted.')) {
+      this.loading = true;
       this.adminService.deleteModule(moduleId).subscribe({
         next: () => {
-          this.modules = this.modules.filter(m => m.moduleId !== moduleId);
-          this.videos = this.videos.filter(v => v.moduleId !== moduleId);
+          this.loadModules(); // Reload to get updated data
+          this.loadVideos(); // Reload videos as well
           alert('Module deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting module:', error);
-          alert('Failed to delete module');
+          this.loading = false;
+          alert('Failed to delete module: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }
@@ -97,14 +99,16 @@ export class AdminContent implements OnInit {
 
   deleteVideo(videoId: number) {
     if (confirm('Are you sure you want to delete this video?')) {
+      this.loading = true;
       this.adminService.deleteVideo(videoId).subscribe({
         next: () => {
-          this.videos = this.videos.filter(v => v.id !== videoId);
+          this.loadVideos(); // Reload to get updated data
           alert('Video deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting video:', error);
-          alert('Failed to delete video');
+          this.loading = false;
+          alert('Failed to delete video: ' + (error.error?.message || error.message || 'Unknown error'));
         }
       });
     }

@@ -42,18 +42,26 @@ export class AdminService {
     return forkJoin({
       courses: this.http.get<ICourse[]>(`${this.apiUrl}/Course`),
       instructors: this.http.get<IInstructor[]>(`${this.apiUrl}/Instructor`),
-      enrollments: this.http.get<IEnrollment[]>(`${this.apiUrl}/Enrollment`),
+      enrollments: this.http.get<any[]>(`${this.apiUrl}/Enrollment`),
       categories: this.http.get<ICategory[]>(`${this.apiUrl}/Category`)
     }).pipe(
-      map(data => ({
-        totalCourses: data.courses.length,
-        totalInstructors: data.instructors.length,
-        totalEnrollments: data.enrollments.length,
-        totalCategories: data.categories.length,
-        activeStudents: new Set(data.enrollments.filter(e => e.status === 'Active').map(e => e.studentId)).size,
-        pendingInstructors: data.instructors.filter(i => !i.isVerified).length,
-        totalStudents: 0
-      }))
+      map(data => {
+        const mappedEnrollments = data.enrollments.map(e => this.mapEnrollmentFromBackend(e));
+        // Calculate total students from unique student IDs
+        const uniqueStudentIds = new Set(mappedEnrollments.map(e => e.studentId));
+        const totalStudents = uniqueStudentIds.size;
+        const activeStudents = new Set(mappedEnrollments.filter(e => e.status === 'Active').map(e => e.studentId)).size;
+        
+        return {
+          totalCourses: data.courses.length,
+          totalInstructors: data.instructors.length,
+          totalEnrollments: mappedEnrollments.length,
+          totalCategories: data.categories.length,
+          activeStudents: activeStudents,
+          pendingInstructors: data.instructors.filter(i => !i.isVerified).length,
+          totalStudents: totalStudents
+        };
+      })
     );
   }
 
@@ -61,25 +69,31 @@ export class AdminService {
     return forkJoin({
       courses: this.http.get<ICourse[]>(`${this.apiUrl}/Course`),
       instructors: this.http.get<IInstructor[]>(`${this.apiUrl}/Instructor`),
-      enrollments: this.http.get<IEnrollment[]>(`${this.apiUrl}/Enrollment`),
+      enrollments: this.http.get<any[]>(`${this.apiUrl}/Enrollment`),
       categories: this.http.get<ICategory[]>(`${this.apiUrl}/Category`)
     }).pipe(
       map(data => {
-        const recentEnrollments = data.enrollments
+        const mappedEnrollments = data.enrollments.map(e => this.mapEnrollmentFromBackend(e));
+        const recentEnrollments = mappedEnrollments
           .sort((a, b) => new Date(b.enrollmentDate).getTime() - new Date(a.enrollmentDate).getTime())
           .slice(0, 10);
 
-        const enrollmentsByMonth = this.calculateEnrollmentsByMonth(data.enrollments);
+        const enrollmentsByMonth = this.calculateEnrollmentsByMonth(mappedEnrollments);
         const coursesByCategory = this.calculateCoursesByCategory(data.courses, data.categories);
+
+        // Calculate total students from unique student IDs in enrollments
+        const uniqueStudentIds = new Set(mappedEnrollments.map(e => e.studentId));
+        const totalStudents = uniqueStudentIds.size;
+        const activeStudents = new Set(mappedEnrollments.filter(e => e.status === 'Active').map(e => e.studentId)).size;
 
         return {
           totalCourses: data.courses.length,
           totalInstructors: data.instructors.length,
-          totalEnrollments: data.enrollments.length,
+          totalEnrollments: mappedEnrollments.length,
           totalCategories: data.categories.length,
-          activeStudents: new Set(data.enrollments.filter(e => e.status === 'Active').map(e => e.studentId)).size,
+          activeStudents: activeStudents,
           pendingInstructors: data.instructors.filter(i => !i.isVerified).length,
-          totalStudents: 0,
+          totalStudents: totalStudents,
           recentEnrollments,
           enrollmentsByMonth,
           coursesByCategory
@@ -138,12 +152,43 @@ export class AdminService {
     return this.http.get<ICourse>(`${this.apiUrl}/Course/${id}`);
   }
 
-  createCourse(course: ICourseCreate): Observable<ICourse> {
-    return this.http.post<ICourse>(`${this.apiUrl}/Course`, course);
+  createCourse(course: ICourseCreate, thumbnailFile?: File): Observable<ICourse> {
+    const formData = new FormData();
+    formData.append('Title', course.title);
+    formData.append('Description', course.description || '');
+    formData.append('Price', course.price.toString());
+    formData.append('IsFree', course.isFree.toString());
+    formData.append('CategoryId', course.categoryId.toString());
+    formData.append('InstructorId', course.instructorId.toString());
+    
+    if (thumbnailFile) {
+      formData.append('ThumbnailUrl', thumbnailFile);
+    } else if (course.thumbnailUrl) {
+      // If URL is provided but no file, we'll send it as a string
+      // Note: Backend expects IFormFile, so this might need adjustment
+      formData.append('ThumbnailUrl', course.thumbnailUrl);
+    }
+
+    return this.http.post<ICourse>(`${this.apiUrl}/Course`, formData);
   }
 
-  updateCourse(id: number, course: ICourseUpdate): Observable<ICourse> {
-    return this.http.put<ICourse>(`${this.apiUrl}/Course/${id}`, course);
+  updateCourse(id: number, course: ICourseUpdate, thumbnailFile?: File): Observable<ICourse> {
+    const formData = new FormData();
+    
+    if (course.title) formData.append('Title', course.title);
+    if (course.description !== undefined) formData.append('Description', course.description);
+    if (course.price !== undefined) formData.append('Price', course.price.toString());
+    if (course.isFree !== undefined) formData.append('IsFree', course.isFree.toString());
+    if (course.categoryId) formData.append('CategoryId', course.categoryId.toString());
+    if (course.instructorId) formData.append('InstructorId', course.instructorId.toString());
+    
+    if (thumbnailFile) {
+      formData.append('ThumbnailUrl', thumbnailFile);
+    } else if (course.thumbnailUrl) {
+      formData.append('ThumbnailUrl', course.thumbnailUrl);
+    }
+
+    return this.http.put<ICourse>(`${this.apiUrl}/Course/${id}`, formData);
   }
 
   deleteCourse(id: number): Observable<void> {
@@ -171,19 +216,32 @@ export class AdminService {
   // ==================== ENROLLMENT MANAGEMENT ====================
 
   getEnrollments(): Observable<IEnrollment[]> {
-    return this.http.get<IEnrollment[]>(`${this.apiUrl}/Enrollment`);
+    return this.http.get<any[]>(`${this.apiUrl}/Enrollment`).pipe(
+      map(enrollments => enrollments.map(e => this.mapEnrollmentFromBackend(e)))
+    );
   }
 
-  getEnrollmentsByStudent(studentId: string): Observable<IEnrollment[]> {
-    return this.http.get<IEnrollment[]>(`${this.apiUrl}/Enrollment/GetEnrollmentsByStudentId/${studentId}`);
+  getEnrollmentsByStudent(studentId: number): Observable<IEnrollment[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/Enrollment/GetEnrollmentsByStudentId/${studentId}`).pipe(
+      map(enrollments => enrollments.map(e => this.mapEnrollmentFromBackend(e)))
+    );
   }
 
   getEnrollmentsByInstructor(instructorId: number): Observable<IEnrollment[]> {
-    return this.http.get<IEnrollment[]>(`${this.apiUrl}/Enrollment/GetEnrollmentsByInstructorId/${instructorId}`);
+    return this.http.get<any[]>(`${this.apiUrl}/Enrollment/GetEnrollmentsByInstructorId/${instructorId}`).pipe(
+      map(enrollments => enrollments.map(e => this.mapEnrollmentFromBackend(e)))
+    );
   }
 
   addEnrollment(enrollment: IEnrollmentCreate): Observable<IEnrollment> {
-    return this.http.post<IEnrollment>(`${this.apiUrl}/Enrollment/AddEnrollment`, enrollment);
+    // Backend expects StdId as int, not string
+    const backendEnrollment = {
+      StdId: parseInt(enrollment.studentId) || 0,
+      CourseId: enrollment.courseId
+    };
+    return this.http.post<any>(`${this.apiUrl}/Enrollment/AddEnrollment`, backendEnrollment).pipe(
+      map(e => this.mapEnrollmentFromBackend(e))
+    );
   }
 
   cancelEnrollment(enrollmentId: number): Observable<void> {
@@ -194,32 +252,104 @@ export class AdminService {
     return this.http.put<void>(`${this.apiUrl}/Enrollment/DeleteEnrollment/${enrollmentId}`, {});
   }
 
+  private mapEnrollmentFromBackend(e: any): IEnrollment {
+    // Extract student name from Student object (which has User relation)
+    let studentName = '';
+    if (e.student?.user) {
+      studentName = `${e.student.user.firstName || ''} ${e.student.user.lastName || ''}`.trim() || 
+                    e.student.user.userName || 
+                    e.student.user.email || '';
+    } else if (e.Student?.User) {
+      studentName = `${e.Student.User.FirstName || ''} ${e.Student.User.LastName || ''}`.trim() || 
+                    e.Student.User.UserName || 
+                    e.Student.User.Email || '';
+    } else if (e.student?.name) {
+      studentName = e.student.name;
+    } else if (e.Student?.name) {
+      studentName = e.Student.name;
+    } else if (e.student?.userName) {
+      studentName = e.student.userName;
+    } else if (e.Student?.UserName) {
+      studentName = e.Student.UserName;
+    }
+
+    return {
+      enrollmentId: e.id || e.Id || 0,
+      studentId: (e.stdId || e.StdId || '').toString(),
+      courseId: e.courseId || e.CourseId || 0,
+      enrollmentDate: e.enrollmentDate || e.EnrollmentDate || new Date(),
+      status: (e.status || e.Status || 'Active') as 'Active' | 'Completed' | 'Cancelled',
+      progress: e.progressPercentage || e.ProgressPercentage || 0,
+      courseName: e.course?.title || e.Course?.Title || '',
+      studentName: studentName || `Student #${e.stdId || e.StdId || 'Unknown'}`,
+      instructorId: e.course?.instructorId || e.Course?.InstructorId
+    };
+  }
+
   // ==================== MODULE MANAGEMENT ====================
 
   getModules(): Observable<IModule[]> {
-    return this.http.get<IModule[]>(`${this.apiUrl}/Module`);
+    return this.http.get<any[]>(`${this.apiUrl}/Module`).pipe(
+      map(modules => modules.map(m => this.mapModuleFromBackend(m)))
+    );
   }
 
   getModulesByCourse(courseId: number): Observable<IModule[]> {
-    return this.http.get<IModule[]>(`${this.apiUrl}/Module/GetModulesByCrsID/${courseId}`);
+    return this.http.get<any[]>(`${this.apiUrl}/Module/GetModulesByCrsID/${courseId}`).pipe(
+      map(modules => modules.map(m => this.mapModuleFromBackend(m)))
+    );
   }
 
   createModule(module: IModuleCreate): Observable<IModule> {
-    return this.http.post<IModule>(`${this.apiUrl}/Module`, module);
+    // Backend expects: Id, Title, ModuleArrangement, CourseId
+    const backendModule = {
+      Id: 0, // New module, no ID yet
+      Title: module.moduleName,
+      ModuleArrangement: module.moduleOrder,
+      CourseId: module.courseId
+    };
+    return this.http.post<any>(`${this.apiUrl}/Module`, backendModule).pipe(
+      map(m => this.mapModuleFromBackend(m))
+    );
   }
 
   updateModule(module: IModuleUpdate): Observable<IModule> {
-    return this.http.put<IModule>(`${this.apiUrl}/Module`, module);
+    // Backend expects AddModuleDTO: Id, Title, ModuleArrangement, CourseId
+    if (!module.courseId) {
+      throw new Error('courseId is required for module update');
+    }
+    const backendModule = {
+      Id: module.moduleId,
+      Title: module.moduleName || '',
+      ModuleArrangement: module.moduleOrder || 0,
+      CourseId: module.courseId
+    };
+    return this.http.put<any>(`${this.apiUrl}/Module`, backendModule).pipe(
+      map(m => this.mapModuleFromBackend(m))
+    );
   }
 
   deleteModule(moduleId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/Module?id=${moduleId}`);
   }
 
+  private mapModuleFromBackend(m: any): IModule {
+    return {
+      moduleId: m.id || m.Id || 0,
+      courseId: m.courseId || m.CourseId || 0,
+      moduleName: m.title || m.Title || '',
+      moduleDescription: '', // Backend doesn't return description
+      moduleOrder: m.moduleArrangement || m.ModuleArrangement || 0,
+      videosCount: m.videos?.length || m.Videos?.length || 0
+    };
+  }
+
   // ==================== VIDEO MANAGEMENT ====================
 
   getVideos(): Observable<IVideo[]> {
-    return this.http.get<IVideo[]>(`${this.apiUrl}/Video/GetAllVideos`);
+    return this.http.get<any[]>(`${this.apiUrl}/Video/GetAllVideos`).pipe(
+      map(videos => videos.map(v => this.mapVideoFromBackend(v)))
+    );
   }
 
   uploadVideo(videoFile: File, title: string, moduleId: number, videoOrder: number): Observable<IVideo> {
@@ -229,15 +359,47 @@ export class AdminService {
     formData.append('ModuleId', moduleId.toString());
     formData.append('VideoArrangement', videoOrder.toString());
 
-    return this.http.post<IVideo>(`${this.apiUrl}/Video/upload`, formData);
+    // Backend returns { message: "Video uploaded successfully" }, not the video object
+    // So we need to fetch the video list and find the newly uploaded one, or return a placeholder
+    return this.http.post<any>(`${this.apiUrl}/Video/upload`, formData).pipe(
+      // After upload, we could reload videos, but for now return a placeholder
+      map(() => ({
+        id: 0,
+        moduleId: moduleId,
+        title: title,
+        videoUrl: '',
+        videoOrder: videoOrder,
+        duration: 0
+      } as IVideo))
+    );
   }
 
   updateVideo(video: IVideoUpdate): Observable<IVideo> {
-    return this.http.put<IVideo>(`${this.apiUrl}/Video/UpdateVideo`, video);
+    // Backend expects VideoUpdateDto with File (optional), Title, VideoArrangement
+    const formData = new FormData();
+    if (video.title) formData.append('Title', video.title);
+    if (video.videoOrder) formData.append('VideoArrangement', video.videoOrder.toString());
+    if (video.id) formData.append('Id', video.id.toString());
+    
+    return this.http.put<any>(`${this.apiUrl}/Video/UpdateVideo`, formData).pipe(
+      map(v => this.mapVideoFromBackend(v))
+    );
   }
 
   deleteVideo(videoId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/Video/DeleteVideo/${videoId}`);
+  }
+
+  private mapVideoFromBackend(v: any): IVideo {
+    return {
+      id: v.id || v.Id || 0,
+      moduleId: v.moduleId || v.ModuleId || 0,
+      title: v.title || v.Title || '',
+      videoUrl: v.videoUrl || v.VideoUrl || v.filePath || v.FilePath || '',
+      duration: v.duration || v.Duration || 0,
+      videoOrder: v.videoOrder || v.VideoOrder || v.videoArrangement || v.VideoArrangement || 0,
+      moduleName: v.moduleName || v.ModuleName || v.courseName || v.CourseName || ''
+    };
   }
 
   // ==================== CATEGORY MANAGEMENT ====================
