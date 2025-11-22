@@ -74,6 +74,7 @@ export class StudentCourseDetails implements OnInit {
     this.video.getAllVideos().subscribe({
       next: (response) => {
         this.videos = response.filter(x => this.modules.some(m => m.id == x.moduleId));
+        console.log(this.videos);
         this.cdr.detectChanges();
       }
     });
@@ -171,4 +172,13 @@ export class StudentCourseDetails implements OnInit {
       });
   }
 
+
+
+  openVideo(id: number) {
+    this.video.getVideoById(id).subscribe({
+      next: (response) => {
+        console.log(response);
+        this.router.navigate(['/courses', this.courseDetails.id, 'video', response.id]);
+    }});
+  }
 }

@@ -36,7 +36,7 @@ export class VideoService {
   }
 
   getVideoById(id: number): Observable<VideoCreateDto> {
-    return this.http.get<VideoCreateDto>(`${this.baseUrl}/api/Video/GetVideoById${id}`);
+    return this.http.get<VideoCreateDto>(`${this.baseUrl}/api/Video/GetVideoById/${id}`);
   }
 
   deleteVideo(id: number): Observable<any> {

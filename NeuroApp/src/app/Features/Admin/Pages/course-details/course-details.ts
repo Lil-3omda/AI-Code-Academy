@@ -2,9 +2,11 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CourseService } from '../../../../Core/services/Course/course-service';
 import { IAllCourses } from '../../../../Core/interfaces/Course/iall-courses';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-course-details',
+  imports: [CommonModule],
   templateUrl: './course-details.html',
   styleUrls: ['./course-details.css']
 })

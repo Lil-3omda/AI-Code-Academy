@@ -1,0 +1,156 @@
+<app-navbar></app-navbar>
+<div class="course-player-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading course content...</p>
+  </div>
+
+  <!-- Error State (Not Enrolled or Other Errors) -->
+  <div *ngIf="!isLoading && enrollmentCheckComplete && (!isEnrolled || errorMessage)" class="error-container">
+    <div class="alert alert-warning" role="alert">
+      <h4 class="alert-heading">
+        <i class="fas fa-lock me-2"></i>
+        Access Restricted
+      </h4>
+      <p>{{ errorMessage || 'You are not enrolled in this course. Please enroll to access the content.' }}</p>
+      <hr>
+      <p class="mb-0">
+        <button class="btn btn-primary" (click)="goToEnrollment()">
+          <i class="fas fa-arrow-left me-2"></i>
+          Go to Course Details
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Course Player (Only shown if enrolled) -->
+  <div *ngIf="!isLoading && isEnrolled && course" class="player-layout">
+    <!-- Left Sidebar: Course Info, Modules, and Videos -->
+    <aside class="sidebar">
+      <!-- Modules List -->
+      <div class="modules-list">
+        <h3 class="modules-title">
+          <i class="fas fa-list me-2"></i>
+          Course Content
+        </h3>
+
+        <div *ngFor="let module of modules" class="module-item"
+             [class.active]="selectedModule?.id === module.id">
+          <div class="module-header" (click)="selectModule(module)">
+            <i class="fas fa-folder me-2"></i>
+            <span class="module-name">{{ module.title }}</span>
+            <span class="module-count">
+              {{ getModuleVideos(module.id).length }} video(s)
+            </span>
+          </div>
+
+          <!-- Videos in Module -->
+          <div *ngIf="selectedModule?.id === module.id && module.videos && module.videos.length > 0"
+               class="videos-list">
+            <div *ngFor="let video of module.videos"
+                   class="video-item"
+                   [class.active]="selectedVideo?.id === video.id"
+                   (click)="selectVideo($any(video))"
+                   [attr.aria-label]="'Play video: ' + video.title">
+                <div class="video-item-content">
+                  <div class="video-icon-wrapper">
+                    <i class="fas fa-play-circle" [class.playing]="selectedVideo?.id === video.id && isPlaying"></i>
+                  </div>
+                  <div class="video-info">
+                    <span class="video-name">{{ video.title }}</span>
+                    <span class="video-duration">{{ formatTime(video.duration) }}</span>
+                  </div>
+                </div>
+                <div class="video-progress-indicator" *ngIf="$any(video).progress && video.duration">
+                  <div class="video-progress-bar" [style.width.%]="($any(video).progress / (video.duration || 1)) * 100"></div>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content: Video Player -->
+    <main class="video-content">
+      <div class="course-header">
+        <h2 class="course-title">{{ course.title }}</h2>
+      </div>
+      <div class="video-container" #videoContainer>
+        <!-- Watermark -->
+        <div class="watermark" #watermark>
+          {{ getWatermarkText() }}
+        </div>
+
+        <!-- Video Player -->
+        <video
+          #videoPlayer
+          class="video-player h-200"
+          [src]="currentVideoUrl"
+          controls
+          controlsList="nodownload noplaybackrate"
+          disablePictureInPicture
+          (contextmenu)="$event.preventDefault()"
+          (dragstart)="$event.preventDefault()">
+          Your browser does not support the video tag.
+        </video>
+
+        <!-- Video Info Overlay -->
+        <!-- <div *ngIf="selectedVideo" class="video-info-overlay">
+          <h4 class="video-title">{{ selectedVideo.title }}</h4>
+          <p class="video-module" *ngIf="selectedModule">
+            Module: {{ selectedModule.title }}
+          </p>
+        </div> -->
+
+        <div class="custom-controls" *ngIf="selectedVideo">
+          <div class="progress-bar-container" (click)="onProgressBarClick($event)">
+            <div class="progress-bar"
+                [style.width.%]="duration > 0 ? (currentTime / (duration || 1)) * 100 : 0">
+            </div>
+          </div>
+
+          <div class="controls-row">
+            <!-- Play / Pause -->
+            <button class="btn-control" (click)="togglePlay()" [attr.aria-label]="isPlaying ? 'Pause' : 'Play'">
+              <i [class]="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+            </button>
+
+            <!-- Current Time -->
+            <span class="time-display">
+              {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+            </span>
+
+            <!-- Volume -->
+            <div class="volume-control">
+              <i class="fas" [ngClass]="volume === 0 ? 'fa-volume-mute' : (volume < 0.5 ? 'fa-volume-down' : 'fa-volume-up')"></i>
+              <input type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    [value]="volume"
+                    (input)="setVolume($any($event.target).value)"
+                    class="volume-slider"
+                    aria-label="Volume">
+            </div>
+
+            <!-- Fullscreen Button -->
+            <button class="btn-control" (click)="toggleFullscreen()" aria-label="Toggle fullscreen">
+              <i class="fas" [ngClass]="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Details Section -->
+      <div *ngIf="selectedVideo" class="video-details">
+        <h5>About this video</h5>
+        <p><strong>Title:</strong> {{ selectedVideo.title }}</p>
+        <p><strong>Duration:</strong> {{ formatTime(selectedVideo.duration) }}</p>
+        <p *ngIf="selectedModule"><strong>Module:</strong> {{ selectedModule.title }}</p>
+      </div>
+    </main>
+  </div>
+</div>

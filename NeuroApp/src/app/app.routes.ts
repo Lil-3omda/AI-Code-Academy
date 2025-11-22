@@ -83,6 +83,25 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
+  // 🔹 Course Player (for enrolled students)
+  {
+    path: 'courses/:courseId',
+    loadComponent: () =>
+      import('../app/Features/Home/CoursePlayer/Components/course-player/course-player.component')
+        .then(m => m.CoursePlayerComponent),
+    canActivate: [authGuard],
+    data: { roles: ['Student'] }
+  },
+  // 🔹 Course Player with specific video (for enrolled students)
+  {
+    path: 'courses/:courseId/video/:videoId',
+    loadComponent: () =>
+      import('../app/Features/Home/CoursePlayer/Components/course-player/course-player.component')
+        .then(m => m.CoursePlayerComponent),
+    canActivate: [authGuard],
+    data: { roles: ['Student'] }
+  },
+
   // 🔹 All Courses
   {
     path: 'AllCourses',
